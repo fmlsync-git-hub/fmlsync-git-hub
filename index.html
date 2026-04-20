@@ -1,0 +1,179 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FML-Ticketing</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎫</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Global Smooth Transitions */
+      button, a, input, select, textarea, [class*="bg-"], [class*="text-"], [class*="border-"] {
+        transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 300ms;
+      }
+
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      html.dark ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: rgb(var(--color-border-default));
+        border-radius: 4px;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: rgb(var(--color-text-secondary));
+      }
+
+      /* CSS Keyframes for Page Transitions */
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @keyframes slideIn {
+        from { opacity: 0; transform: translateX(20px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+      
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .page-fade {
+        animation: fadeIn 0.5s ease-out forwards;
+      }
+      .page-slide {
+        animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .animate-slide-up {
+        animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      
+      body {
+          /* Ensure the body takes full height */
+          min-height: 100vh;
+          /* The base margin color */
+          background-color: rgb(var(--color-background-margin));
+          /* Pattern settings */
+          background-repeat: repeat;
+          background-position: center;
+          background-size: auto;
+          overflow-x: hidden; /* Prevent horizontal scroll */
+      }
+      
+      /* Overlay pseudo-element to handle pattern opacity/fading */
+      body::before {
+          content: "";
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          /* This uses the margin background color to "fade" the image behind it */
+          background-color: rgb(var(--color-background-margin));
+          /* Logic: If opacity var is 1 (full image), overlay opacity is 0. */
+          opacity: calc(1 - var(--opacity-background-pattern, 1));
+          pointer-events: none;
+          z-index: -1;
+          transition: background-color 0.3s ease, opacity 0.3s ease;
+      }
+
+    </style>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              // Theming using CSS variables
+              background: 'rgb(var(--color-background) / <alpha-value>)',
+              'background-margin': 'rgb(var(--color-background-margin) / <alpha-value>)',
+              'on-background': 'rgb(var(--color-on-background) / <alpha-value>)',
+              'on-background-secondary': 'rgb(var(--color-on-background-secondary) / <alpha-value>)',
+              surface: {
+                DEFAULT: 'rgb(var(--color-surface) / var(--opacity-surface, 1))',
+                soft: 'rgb(var(--color-surface-soft) / var(--opacity-surface-soft, 1))',
+              },
+              input: 'rgb(var(--color-input-bg) / var(--opacity-input, 1))',
+              'on-input': 'rgb(var(--color-input-text) / <alpha-value>)',
+              
+              sidebar: 'rgb(var(--color-sidebar) / var(--opacity-sidebar, 1))',
+              header: 'rgb(var(--color-header) / var(--opacity-header, 1))',
+              'on-surface': 'rgb(var(--color-on-surface) / <alpha-value>)',
+              'on-sidebar': 'rgb(var(--color-on-sidebar) / <alpha-value>)',
+              'on-header': 'rgb(var(--color-on-header) / <alpha-value>)',
+              primary: {
+                DEFAULT: 'rgb(var(--color-primary) / <alpha-value>)',
+                dark: 'rgb(var(--color-primary-dark) / <alpha-value>)',    
+              },
+              'on-primary': {
+                DEFAULT: 'rgb(var(--color-on-primary) / <alpha-value>)',
+                dark: 'rgb(var(--color-on-primary-dark) / <alpha-value>)',
+              },
+              'text-secondary': 'rgb(var(--color-text-secondary) / <alpha-value>)',
+              'border-default': 'rgb(var(--color-border-default) / <alpha-value>)',
+
+              // Static semantic colors
+              success: '#16a34a', // green-600
+              warning: '#f59e0b', // amber-500
+              danger: '#dc2626', // red-600
+              info: '#0ea5e9',   // sky-500
+              indigo: '#4f46e5',
+              purple: '#7e22ce',
+            }
+          }
+        }
+      }
+    </script>
+    <!-- PDF.js for client-side PDF to image conversion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    <!-- Tesseract.js for Client-Side OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <!-- jsPDF and html2canvas for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Cropper.js for image editing -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.4.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="text-on-background antialiased selection:bg-primary/30 selection:text-primary-dark">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

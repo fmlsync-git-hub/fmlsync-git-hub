@@ -1,0 +1,10 @@
+{
+  "name": "FML-Ticketing-Pro",
+  "description": "A web-based Ticketing & Travel Management App that offers a centralized platform for efficient client data management and automated alerts for critical deadlines for companies like SPIE, MODEC, ADL, BHG, and others.",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera",
+    "microphone",
+    "display-capture"
+  ]
+}

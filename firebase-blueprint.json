@@ -1,0 +1,162 @@
+{
+  "entities": {
+    "Passenger": {
+      "title": "Passenger",
+      "description": "A passenger record containing personal and travel documents.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "companyId": { "type": "string" },
+        "category": { "type": "string", "enum": ["Local", "Expatriate", "Walk-in"] },
+        "passports": { "type": "array" },
+        "ghanaCardData": { "type": "object" },
+        "contactData": { "type": "object" },
+        "visas": { "type": "array" },
+        "permits": { "type": "array" },
+        "tickets": { "type": "array" },
+        "otherDocuments": { "type": "array" },
+        "createdAt": { "type": "object" },
+        "createdBy": { "type": "string" },
+        "profilePhotoUrl": { "type": "string" }
+      },
+      "required": ["id", "companyId", "category", "createdAt"]
+    },
+    "User": {
+      "title": "User",
+      "description": "A user of the application.",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "role": { "type": "string", "enum": ["developer", "app_manager", "admin", "officer", "client", "designer", "dashboard_only"] },
+        "email": { "type": "string" },
+        "uid": { "type": "string" }
+      },
+      "required": ["username", "role"]
+    },
+    "UserSettings": {
+      "title": "UserSettings",
+      "description": "Settings and profile information for a user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "firstNames": { "type": "string" },
+        "surname": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "disabledMenus": { "type": "array" },
+        "lastLogin": { "type": "object" },
+        "lastSeen": { "type": "object" },
+        "lastLogout": { "type": "object" },
+        "companyId": { "type": "string" },
+        "layout": { "type": "string" }
+      },
+      "required": ["id", "isActive"]
+    },
+    "ActivityLog": {
+      "title": "ActivityLog",
+      "description": "A log of user activity.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "timestamp": { "type": "object" },
+        "user": { "type": "string" },
+        "message": { "type": "string" }
+      },
+      "required": ["id", "timestamp", "user", "message"]
+    },
+    "Checklist": {
+      "title": "Checklist",
+      "description": "A checklist of required documents for a category.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "activityName": { "type": "string" },
+        "requiredDocuments": { "type": "array" },
+        "category": { "type": "string" }
+      },
+      "required": ["id", "activityName", "requiredDocuments"]
+    },
+    "TicketIssue": {
+      "title": "TicketIssue",
+      "description": "An issue found during batch ticket processing.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileType": { "type": "string" },
+        "extractedData": { "type": "object" },
+        "suggestedPassengerName": { "type": "string" },
+        "status": { "type": "string", "enum": ["Open", "Resolved", "Ignored"] },
+        "createdAt": { "type": "object" }
+      },
+      "required": ["id", "fileName", "status", "createdAt"]
+    },
+    "InAppNotification": {
+      "title": "InAppNotification",
+      "description": "A notification for a specific user.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "body": { "type": "string" },
+        "type": { "type": "string", "enum": ["info", "success", "warning", "error", "message"] },
+        "link": { "type": "string" },
+        "read": { "type": "boolean" },
+        "timestamp": { "type": "object" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["id", "userId", "title", "body", "type", "read", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/passengers/{passengerId}": {
+      "schema": "Passenger",
+      "description": "Collection of passenger records."
+    },
+    "/users/{username}": {
+      "schema": "User",
+      "description": "Collection of users."
+    },
+    "/usersSettings/{username}": {
+      "schema": "UserSettings",
+      "description": "Collection of user settings."
+    },
+    "/activityLogs/{logId}": {
+      "schema": "ActivityLog",
+      "description": "Collection of activity logs."
+    },
+    "/checklists/{checklistId}": {
+      "schema": "Checklist",
+      "description": "Collection of checklists."
+    },
+    "/ticketIssues/{issueId}": {
+      "schema": "TicketIssue",
+      "description": "Collection of ticket issues."
+    },
+    "/inAppNotifications/{notificationId}": {
+      "schema": "InAppNotification",
+      "description": "Collection of in-app notifications."
+    },
+    "/settings/notifications": {
+      "schema": { "type": "object" },
+      "description": "Global notification settings."
+    },
+    "/settings/twilio": {
+      "schema": { "type": "object" },
+      "description": "Global Twilio settings."
+    },
+    "/settings/companies": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "custom": { "type": "array" },
+          "appearances": { "type": "object" },
+          "order": { "type": "array" }
+        }
+      },
+      "description": "Global company settings including custom companies, appearances, and display order."
+    }
+  }
+}
