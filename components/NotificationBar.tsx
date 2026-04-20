@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { NotificationType } from '../src/services/notificationService';
+import { NotificationService, NotificationType } from '../services/notificationService';
 import { Passenger } from '../types';
 import { getExpiryStatus } from '../hooks/useFormatters';
 

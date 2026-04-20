@@ -56,8 +56,14 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, storageK
     return (saved && THEMES[saved as ThemeName]) ? (saved as ThemeName) : 'royalIndigo';
   });
   const [customColors, setCustomColorsState] = useState<CustomColors>(() => {
-    const saved = localStorage.getItem(`${storageKey}_customColors`);
-    return saved ? JSON.parse(saved) : {};
+    try {
+      const saved = localStorage.getItem(`${storageKey}_customColors`);
+      const parsed = saved ? JSON.parse(saved) : {};
+      return (parsed && typeof parsed === 'object') ? parsed : {};
+    } catch (e) {
+      console.error("Error parsing custom colors from localStorage:", e);
+      return {};
+    }
   });
 
   useEffect(() => {
@@ -66,11 +72,21 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, storageK
         setThemeState(userTheme as ThemeName);
     }
 
-    // 2. Mock listener for Global/Developer Overrides
+    // 2. Listener for Global/Developer Overrides
     const themeRef = doc(db, 'settings', storageKey);
     
     const unsubscribe = onSnapshot(themeRef, docSnap => {
-      // We use localStorage now
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.name && THEMES[data.name as ThemeName]) {
+          setThemeState(data.name as ThemeName);
+          localStorage.setItem(`${storageKey}_name`, data.name);
+        }
+        if (data.customColors) {
+          setCustomColorsState(data.customColors);
+          localStorage.setItem(`${storageKey}_customColors`, JSON.stringify(data.customColors));
+        }
+      }
     }, error => {
         console.error(`Error listening to theme settings ('${storageKey}'):`, error);
     });

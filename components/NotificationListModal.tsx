@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { toast } from 'sonner';
-import { NotificationType } from '../src/services/notificationService';
+import { NotificationType } from '../services/notificationService';
 import { Passenger } from '../types';
 import { getExpiryStatus } from '../hooks/useFormatters';
 

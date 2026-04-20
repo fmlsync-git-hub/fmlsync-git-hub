@@ -10,7 +10,7 @@ import { useFormatters, getExpiryStatus } from '../hooks/useFormatters';
 import { CollapsibleCard } from '../components/CollapsibleCard';
 import { useDuplicateFilter } from '../hooks/useDuplicateFilter';
 import { DuplicateToggle } from '../components/DuplicateToggle';
-import { sendNotification, requestNotificationPermission, NotificationType } from '../src/services/notificationService';
+import { sendNotification, requestNotificationPermission, NotificationType } from '../services/notificationService';
 import { NotificationBar } from '../components/NotificationBar';
 import { NotificationListModal } from '../components/NotificationListModal';
 

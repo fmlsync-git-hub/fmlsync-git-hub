@@ -1,6 +1,7 @@
 
 import React, { createContext, useState, useEffect, useContext, useMemo } from 'react';
 import { Screen } from '../types';
+import { db, doc, onSnapshot, setDoc } from '../services/firebase';
 
 export type SpinnerStyle = 'pulse' | 'dots' | 'ring';
 export type AnimationStyle = 'none' | 'fade' | 'slide';
@@ -62,7 +63,7 @@ const defaultLoginSettings: LoginScreenSettings = {
 };
 
 const defaultSettings: BrandingSettings = {
-  appName: 'FML-Ticketing',
+  appName: 'FML-Ticketing-Pro',
   appLogo: null,
   brandColor: '#4f46e5', 
   dashboardTitle: 'EXECUTIVE COMMAND', 
@@ -92,6 +93,24 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return saved ? JSON.parse(saved) : defaultSettings;
   });
 
+  // Sync with Firestore for parity across deployments
+  useEffect(() => {
+    const docRef = doc(db, 'settings', 'branding');
+    const unsubscribe = onSnapshot(docRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data() as BrandingSettings;
+        setBranding(prev => ({ ...prev, ...data }));
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Persist branding changes to localStorage
+  useEffect(() => {
+    localStorage.setItem('fml_branding_settings', JSON.stringify(branding));
+  }, [branding]);
+
   // Inject Dynamic CSS Variables for Layout
   useEffect(() => {
     const root = document.documentElement;
@@ -118,6 +137,11 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setBranding(prev => {
         const newSettings = { ...prev, ...settings };
         localStorage.setItem('fml_branding_settings', JSON.stringify(newSettings));
+        
+        // Persist to Firestore
+        setDoc(doc(db, 'settings', 'branding'), newSettings, { merge: true })
+            .catch(err => console.error("Error saving branding to Firestore:", err));
+
         return newSettings;
     });
   };

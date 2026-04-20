@@ -57,7 +57,7 @@ export class NotificationService {
 
         // Only show browser alert if the page is hidden (multi-device/background support)
         if (document.visibilityState === 'hidden') {
-            const options: NotificationOptions = {
+            const options: any = {
                 body,
                 icon: '/logo.png',
                 badge: '/logo.png',

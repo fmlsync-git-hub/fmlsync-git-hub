@@ -1,10 +1,66 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo, useMemo, useCallback } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { THEMES } from '../themes';
+import { THEMES, Theme } from '../themes';
 import { CheckCircleIcon } from '../components/icons/index';
 import { ColorPickerControl } from '../components/ColorPickerControl';
 import { listenToThemePresets } from '../services/firebase';
 import { ThemePreset } from '../types';
+
+// --- Helper Components ---
+
+const ThemeCard = memo(({ 
+    themeKey, 
+    theme, 
+    isActive, 
+    onClick 
+}: { 
+    themeKey: string, 
+    theme: Theme, 
+    isActive: boolean, 
+    onClick: (key: string) => void 
+}) => {
+    const previewStyles = useMemo(() => ({
+        background: `rgb(${theme.colors['--color-background']})`,
+        '--preview-surface': `rgb(${theme.colors['--color-surface']})`,
+        '--preview-primary': `rgb(${theme.colors['--color-primary']})`,
+        '--preview-text-primary': `rgb(${theme.colors['--color-on-surface']})`,
+        '--preview-text-secondary': `rgb(${theme.colors['--color-text-secondary']})`,
+    } as React.CSSProperties), [theme]);
+
+    return (
+        <div
+            onClick={() => onClick(themeKey)}
+            className={`rounded-lg border-2 transition-all duration-200 cursor-pointer overflow-hidden relative shadow-md ${isActive ? 'border-primary' : 'border-border-default hover:border-primary/50'}`}
+            style={previewStyles}
+        >
+            {isActive && (
+                <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-1 z-10">
+                    <CheckCircleIcon className="h-5 w-5" />
+                </div>
+            )}
+
+            <div className="p-4">
+                <h3 className="font-semibold text-lg" style={{ color: 'var(--preview-text-primary)' }}>{theme.name}</h3>
+            </div>
+            
+            <div className="h-40 p-4 space-y-2 opacity-80">
+                <div className="h-6 rounded w-full" style={{ background: 'var(--preview-surface)' }}></div>
+                <div className="flex items-center gap-2">
+                        <div className="h-8 rounded-full w-8 flex-shrink-0" style={{ background: 'var(--preview-primary)' }}></div>
+                        <div className="space-y-1 w-full">
+                        <div className="h-2.5 rounded-full w-3/4" style={{ background: 'var(--preview-text-primary)' }}></div>
+                        <div className="h-2.5 rounded-full w-1/2" style={{ background: 'var(--preview-text-secondary)' }}></div>
+                        </div>
+                </div>
+                <div className="h-12 rounded w-full" style={{ background: 'var(--preview-surface)' }}></div>
+            </div>
+        </div>
+    );
+});
+
+ThemeCard.displayName = 'ThemeCard';
+
+// --- Main Component ---
 
 // --- Helper Functions ---
 
@@ -23,53 +79,69 @@ const AppearanceScreen: React.FC = () => {
         theme: activeTheme, 
         setTheme, 
         customColors, 
-        setCustomColor, 
+        setCustomColors, 
         resetCustomColors 
     } = useTheme();
 
     const [presets, setPresets] = useState<ThemePreset[]>([]);
+    const [renderThemesRange, setRenderThemesRange] = useState(12); // Lazy load themes list
 
     useEffect(() => {
         const unsubscribe = listenToThemePresets(setPresets);
-        return () => unsubscribe();
+        
+        // Gradually show more themes to keep initial load feeling fast
+        const timer = setTimeout(() => {
+            setRenderThemesRange(Object.keys(THEMES).length);
+        }, 300);
+
+        return () => {
+            unsubscribe();
+            clearTimeout(timer);
+        };
     }, []);
 
-    const activeThemeColors = THEMES[activeTheme].colors;
+    const activeThemeColors = useMemo(() => {
+        if (!activeTheme || !THEMES[activeTheme]) {
+            console.warn(`Invalid active theme in AppearanceScreen: ${activeTheme}`);
+            return THEMES['royalIndigo'].colors;
+        }
+        return THEMES[activeTheme].colors;
+    }, [activeTheme]);
 
     // Helper to get current or default
-    const getVal = (key: keyof typeof customColors) => customColors[key] || activeThemeColors[key as keyof typeof activeThemeColors];
+    const getVal = useCallback((key: string) => {
+        if (!customColors) return activeThemeColors[key as keyof typeof activeThemeColors];
+        return (customColors as any)[key] || activeThemeColors[key as keyof typeof activeThemeColors];
+    }, [customColors, activeThemeColors]);
 
     const currentBgColor = rgbStringToHex(getVal('--color-background'));
-    
     const currentSurfaceColor = rgbStringToHex(getVal('--color-surface'));
     const currentOnSurfaceColor = rgbStringToHex(getVal('--color-on-surface'));
     const currentSurfaceOpacity = getVal('--opacity-surface') || '1';
-
     const currentSidebarColor = rgbStringToHex(getVal('--color-sidebar'));
     const currentOnSidebarColor = rgbStringToHex(getVal('--color-on-sidebar') || getVal('--color-on-surface')); 
     const currentSidebarOpacity = getVal('--opacity-sidebar') || '1';
-
     const currentHeaderColor = rgbStringToHex(getVal('--color-header'));
     const currentOnHeaderColor = rgbStringToHex(getVal('--color-on-header') || getVal('--color-on-surface'));
     const currentHeaderOpacity = getVal('--opacity-header') || '1';
 
-
     const updateColors = (updates: { [key: string]: string }) => {
-        Object.entries(updates).forEach(([key, value]) => {
-            // Casting key to 'any' here because the context interface isn't strictly typed for every CSS var
-            // but setCustomColor accepts the keys.
-            setCustomColor(key as any, value);
-        });
+        setCustomColors({ ...(customColors || {}), ...updates });
     };
     
     const applyPreset = (preset: ThemePreset) => {
-        // We apply the preset colors as custom color overrides
-        Object.entries(preset.colors).forEach(([key, value]) => {
-            setCustomColor(key as any, value);
-        });
+        setCustomColors({ ...(customColors || {}), ...preset.colors });
     };
 
-    const hasCustomColors = Object.keys(customColors).length > 0;
+    const handleThemeClick = useCallback((key: string) => {
+        setTheme(key as any);
+    }, [setTheme]);
+
+    const hasCustomColors = customColors && Object.keys(customColors).length > 0;
+
+    const visibleThemes = useMemo(() => 
+        Object.entries(THEMES).slice(0, renderThemesRange),
+    [renderThemesRange]);
 
     return (
         <div className="space-y-6">
@@ -154,49 +226,20 @@ const AppearanceScreen: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {Object.entries(THEMES).map(([key, theme]) => {
-                    const isActive = activeTheme === key;
-                    
-                    const previewStyles = {
-                        background: `rgb(${theme.colors['--color-background']})`,
-                        '--preview-surface': `rgb(${theme.colors['--color-surface']})`,
-                        '--preview-primary': `rgb(${theme.colors['--color-primary']})`,
-                        '--preview-text-primary': `rgb(${theme.colors['--color-on-surface']})`,
-                        '--preview-text-secondary': `rgb(${theme.colors['--color-text-secondary']})`,
-                    } as React.CSSProperties;
-
-                    return (
-                        <div
-                            key={key}
-                            onClick={() => setTheme(key as keyof typeof THEMES)}
-                            className={`rounded-lg border-2 transition-all duration-200 cursor-pointer overflow-hidden relative shadow-md ${isActive ? 'border-primary' : 'border-border-default hover:border-primary/50'}`}
-                            style={previewStyles}
-                        >
-                            {isActive && (
-                                <div className="absolute top-2 right-2 bg-primary text-white rounded-full p-1 z-10">
-                                    <CheckCircleIcon className="h-5 w-5" />
-                                </div>
-                            )}
-
-                            <div className="p-4">
-                                <h3 className="font-semibold text-lg" style={{ color: 'var(--preview-text-primary)' }}>{theme.name}</h3>
-                            </div>
-                            
-                            <div className="h-40 p-4 space-y-2 opacity-80">
-                                <div className="h-6 rounded w-full" style={{ background: 'var(--preview-surface)' }}></div>
-                                <div className="flex items-center gap-2">
-                                     <div className="h-8 rounded-full w-8 flex-shrink-0" style={{ background: 'var(--preview-primary)' }}></div>
-                                     <div className="space-y-1 w-full">
-                                        <div className="h-2.5 rounded-full w-3/4" style={{ background: 'var(--preview-text-primary)' }}></div>
-                                        <div className="h-2.5 rounded-full w-1/2" style={{ background: 'var(--preview-text-secondary)' }}></div>
-                                     </div>
-                                </div>
-                                <div className="h-12 rounded w-full" style={{ background: 'var(--preview-surface)' }}></div>
-                            </div>
-
-                        </div>
-                    );
-                })}
+                {visibleThemes.map(([key, theme]) => (
+                    <ThemeCard 
+                        key={key} 
+                        themeKey={key} 
+                        theme={theme} 
+                        isActive={activeTheme === key}
+                        onClick={handleThemeClick}
+                    />
+                ))}
+                {renderThemesRange < Object.keys(THEMES).length && (
+                    <div className="col-span-full py-12 flex justify-center">
+                        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+                    </div>
+                )}
             </div>
         </div>
     );

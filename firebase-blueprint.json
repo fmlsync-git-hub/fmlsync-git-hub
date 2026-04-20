@@ -143,6 +143,18 @@
       "schema": { "type": "object" },
       "description": "Global notification settings."
     },
+    "/settings/branding": {
+      "schema": { "type": "object" },
+      "description": "Global branding settings (app name, logo, colors)."
+    },
+    "/settings/theme": {
+      "schema": { "type": "object" },
+      "description": "Public theme settings."
+    },
+    "/settings/developerTheme": {
+      "schema": { "type": "object" },
+      "description": "Developer-specific theme settings."
+    },
     "/settings/twilio": {
       "schema": { "type": "object" },
       "description": "Global Twilio settings."
