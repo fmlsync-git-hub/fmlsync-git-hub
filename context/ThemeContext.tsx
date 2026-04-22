@@ -77,11 +77,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, storageK
         if (data) {
           if (data.name && THEMES[data.name as ThemeName]) {
             setThemeState(data.name as ThemeName);
-            localStorage.setItem(`${storageKey}_name`, data.name);
           }
           if (data.customColors) {
             setCustomColorsState(data.customColors);
-            localStorage.setItem(`${storageKey}_customColors`, JSON.stringify(data.customColors));
           }
         }
     });

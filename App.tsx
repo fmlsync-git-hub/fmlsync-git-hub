@@ -11,6 +11,7 @@ import { ArrowUturnLeftIcon } from './components/icons';
 import ErrorBoundary from './components/ErrorBoundary';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { NotificationService } from './services/notificationService';
+import { listenToUsersAndSettings } from './services/firebase';
 
 const LoginScreen = lazy(() => import('./screens/LoginScreen'));
 const MainApp = lazy(() => import('./screens/MainApp'));
@@ -83,6 +84,27 @@ const AppContent: React.FC = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [showSplash, setShowSplash] = useState(false); // Disable splash screen
 
+  // Real-time synchronization for current user settings
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    
+    if (currentUser) {
+        unsubscribe = listenToUsersAndSettings((allUsers: (User & UserSettings)[]) => {
+            const updatedUser = allUsers.find(u => u.username === currentUser.username);
+            if (updatedUser) {
+                // Check if anything actually changed before updating state to avoid loops
+                if (JSON.stringify(updatedUser) !== JSON.stringify(currentUser)) {
+                    setCurrentUser(updatedUser);
+                }
+            }
+        });
+    }
+
+    return () => {
+        if (unsubscribe) unsubscribe();
+    };
+  }, [currentUser?.username]);
+
   useEffect(() => {
     // Initialize notification service worker
     NotificationService.init();
@@ -140,7 +162,8 @@ const AppContent: React.FC = () => {
       }
 
       if (effectiveUser) {
-          const themeStorageKey = (effectiveUser.role === 'developer' || effectiveUser.role === 'app_manager' || effectiveUser.role === 'designer') ? 'developerTheme' : 'theme';
+          // Force global theme sync by using the same storage key for all roles
+    const themeStorageKey = 'theme';
           
           const AppToRender = () => {
             if (effectiveUser.role === 'client') {
@@ -157,11 +180,9 @@ const AppContent: React.FC = () => {
           };
 
           return (
-            <ThemeProvider storageKey={themeStorageKey} userLayout={effectiveUser.layout}>
-                <LayoutProvider userLayout={effectiveUser.layout}>
-                    <AppToRender />
-                </LayoutProvider>
-            </ThemeProvider>
+            <LayoutProvider userLayout={effectiveUser.layout}>
+                <AppToRender />
+            </LayoutProvider>
           );
       }
       return <LoginScreen onLogin={(user: User & UserSettings) => {

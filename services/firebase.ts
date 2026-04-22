@@ -32,10 +32,8 @@ import { DEFAULT_USERS } from './users';
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Force long polling to avoid WebSocket issues in some environments
-export const db = initializeFirestore(app, {
-    experimentalForceLongPolling: true,
-}, (firebaseConfig as any).firestoreDatabaseId);
+// Using standard Firestore initialization for better real-time responsiveness
+export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
 
 export const auth = getAuth(app);
 
@@ -599,6 +597,13 @@ export const deleteTicketIssue = async (id: string) => {
     } catch (error) {
         handleFirestoreError(error, OperationType.DELETE, path);
     }
+};
+
+export const listenToNotificationSettings = (callback: (settings: NotificationSettings) => void) => {
+    const docRef = doc(db, 'settings', 'notifications');
+    return safeSnapshot(docRef, callback, (docSnap: any) => {
+        return docSnap.exists() ? docSnap.data() as NotificationSettings : null;
+    }, null);
 };
 
 // --- In-App Notifications ---

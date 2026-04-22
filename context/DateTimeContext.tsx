@@ -44,9 +44,19 @@ export const DateTimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   useEffect(() => {
-    // We rely on localStorage and initial settings. 
-    // No need for a persistent Firestore listener here for general usage
-    // as date/time settings are relatively static.
+    // 1. Listen for Real-Time Settings from Firestore
+    const unsubscribe = safeSnapshot(
+      doc(db, 'settings', 'dateTimeSettings'),
+      (data: any) => {
+        if (data) {
+          setSettings(prev => ({ ...prev, ...data }));
+        }
+      },
+      (snap) => snap.exists() ? snap.data() : null,
+      null
+    );
+
+    return () => unsubscribe();
   }, []);
 
   const updateDateTimeSettings = (newSettings: Partial<DateTimeSettings>) => {

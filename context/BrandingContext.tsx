@@ -98,7 +98,6 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const unsubscribe = listenToBranding((data) => {
       if (data) {
         setBranding(prev => ({ ...prev, ...data }));
-        localStorage.setItem('fml_branding_settings', JSON.stringify({ ...branding, ...data }));
       }
     });
     return () => unsubscribe();

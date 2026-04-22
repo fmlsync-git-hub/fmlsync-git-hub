@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useCompanies } from '../context/CompanyContext';
 import { useDateTime, DateTimeSettings } from '../context/DateTimeContext';
 import { Company, NotificationSettings, Passenger, TwilioSettings } from '../types';
-import { getNotificationSettings, updateNotificationSettings, getAllPassengers, getTwilioSettings, updateTwilioSettings, factoryResetApplication } from '../services/firebase';
+import { listenToNotificationSettings, updateNotificationSettings, getAllPassengers, getTwilioSettings, updateTwilioSettings, factoryResetApplication } from '../services/firebase';
 import { CompanyAppearanceModal } from '../components/CompanyAppearanceModal';
 import { AddCompanyModal } from '../components/AddCompanyModal';
 import { ChecklistManager } from '../components/ChecklistManager';
@@ -276,8 +276,11 @@ const NotificationSettingsEditor: React.FC = () => {
     const [allPassengers, setAllPassengers] = useState<Passenger[]>([]);
 
     useEffect(() => {
-        getNotificationSettings().then(setSettings);
+        const unsubscribe = listenToNotificationSettings((data) => {
+            if (data) setSettings(data);
+        });
         getAllPassengers().then(setAllPassengers);
+        return () => unsubscribe();
     }, []);
 
     const handleTriggerChange = (trigger: keyof NotificationSettings['triggers'], field: 'enabled' | 'hoursBefore', value: boolean | number) => {

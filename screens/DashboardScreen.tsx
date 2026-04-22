@@ -616,20 +616,8 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onSelectPassenger, cu
                 }
             );
 
-            // 2. Realtime Database Fallback/Fast Listener
-            const unsubscribeRtdb = listenToAccessiblePassengersRtdb(
-                currentUser,
-                (allPassengers) => {
-                    if (allPassengers && allPassengers.length > 0) {
-                        setPassengers(allPassengers);
-                        setIsLoading(false);
-                    }
-                }
-            );
-
             return () => {
                 unsubscribeFirestore();
-                unsubscribeRtdb();
             };
         }
     }, [currentUser]);
