@@ -87,22 +87,12 @@ const AppContent: React.FC = () => {
     // Initialize notification service worker
     NotificationService.init();
 
-    // Mock Authentication Initialization
+    // Authentication Initialization - Forced to Login Screen every load
     const initialize = async () => {
-        let savedUser = localStorage.getItem('fml_current_user');
-        let parsedUser = null;
-        if (savedUser) {
-            try {
-                parsedUser = JSON.parse(savedUser);
-            } catch (e) {
-                console.error("Failed to parse saved user", e);
-            }
-        }
-
-        // Normal session check
-        if (parsedUser) {
-            setCurrentUser(parsedUser);
-        }
+        // We explicitly don't load from localStorage here to satisfy the requirement
+        // of showing the login page every single time the app starts.
+        
+        // localStorage.removeItem('fml_current_user'); // Optional: truly clear it
         setIsInitializing(false);
     };
 

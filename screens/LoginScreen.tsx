@@ -85,25 +85,25 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full blur-[100px] animate-pulse" style={{ backgroundColor: `${loginSettings.accentColor}20` }}></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full blur-[100px] animate-pulse [animation-delay:2s]" style={{ backgroundColor: `${loginSettings.accentColor}20` }}></div>
 
-      <div className="w-full max-w-md p-8 sm:p-10 space-y-8 backdrop-blur-xl rounded-3xl shadow-2xl border relative z-10 animate-slide-up" style={cardStyle}>
+      <div className="w-full max-w-[360px] p-6 sm:p-7 space-y-6 backdrop-blur-xl rounded-2xl shadow-2xl border relative z-10 animate-slide-up" style={cardStyle}>
         <div className="text-center space-y-2">
-            <div className="shadow-md rounded-2xl p-3 inline-block mb-2" style={{ backgroundColor: loginSettings.inputBackgroundColor }}>
+            <div className="shadow-md rounded-xl p-2 inline-block mb-1" style={{ backgroundColor: loginSettings.inputBackgroundColor }}>
                 {appLogo ? (
-                    <img src={appLogo} alt="App Logo" className="h-16 w-16 object-contain" />
+                    <img src={appLogo} alt="App Logo" className="h-12 w-12 object-contain" />
                 ) : (
-                    <span className="text-4xl">🎫</span>
+                    <span className="text-3xl">🎫</span>
                 )}
             </div>
-            <h1 className="text-3xl font-bold tracking-tight" style={textStyle}>{appName}</h1>
+            <h1 className="text-2xl font-bold tracking-tight" style={textStyle}>{appName}</h1>
             <p className="text-sm font-medium" style={textSecStyle}>Welcome back! Please enter your details.</p>
         </div>
 
-        <form className="mt-8 space-y-5" onSubmit={handleLogin}>
+        <form className="mt-6 space-y-4" onSubmit={handleLogin}>
           <div className="space-y-1">
-            <label className="block text-sm font-semibold ml-1" style={textSecStyle}>Username</label>
+            <label className="block text-xs font-semibold ml-1" style={textSecStyle}>Username</label>
             <input
               style={inputStyle}
-              className="w-full text-base px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 placeholder:opacity-50 backdrop-blur-sm"
+              className="w-full text-base px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 placeholder:opacity-50 backdrop-blur-sm"
               type="text"
               placeholder="Enter your username"
               value={username}
@@ -113,12 +113,12 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
             />
           </div>
           
-          <div className="space-y-1 relative">
+          <div className="space-y-1.5 relative">
             <label className="block text-sm font-semibold ml-1" style={textSecStyle}>Password</label>
             <div className="relative">
                 <input
                     style={inputStyle}
-                    className="w-full text-base px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 placeholder:opacity-50 backdrop-blur-sm"
+                    className="w-full text-base px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 transition-all duration-200 placeholder:opacity-50 backdrop-blur-sm"
                     type={showPassword ? 'text' : 'password'}
                     placeholder="Enter your password"
                     value={password}
@@ -149,7 +149,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
               type="submit"
               disabled={isLoggingIn}
               style={buttonStyle}
-              className="w-full flex justify-center py-3.5 px-4 border border-transparent rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 shadow-lg transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none hover:opacity-90"
+              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-bold focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 shadow-lg transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none hover:opacity-90"
             >
               {isLoggingIn ? (
                   <span className="flex items-center gap-2">
@@ -164,7 +164,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin }) => {
           </div>
         </form>
         
-        <div className="text-center">
+        <div className="text-center pt-3">
              <p className="text-xs opacity-70" style={textSecStyle}>
                 &copy; {new Date().getFullYear()} {appName}. All rights reserved.
              </p>

@@ -44,24 +44,9 @@ export const DateTimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, []);
 
   useEffect(() => {
-    // Keep the mock listener for compatibility, but it doesn't do anything now
-    const settingsRef = doc(db, 'settings', 'dateTimeSettings');
-
-    const unsubscribe = safeSnapshot(
-      settingsRef,
-      (data: any) => {
-        // We use localStorage as source of truth now
-      },
-      (docSnap: any) => {
-        return settings;
-      },
-      settings,
-      (error: any) => {
-        console.error("Error listening to dateTime settings:", error);
-      }
-    );
-
-    return () => unsubscribe();
+    // We rely on localStorage and initial settings. 
+    // No need for a persistent Firestore listener here for general usage
+    // as date/time settings are relatively static.
   }, []);
 
   const updateDateTimeSettings = (newSettings: Partial<DateTimeSettings>) => {

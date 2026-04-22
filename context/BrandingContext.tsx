@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useEffect, useContext, useMemo } from 'react';
 import { Screen } from '../types';
-import { db, doc, onSnapshot, setDoc } from '../services/firebase';
+import { db, doc, setDoc, listenToBranding } from '../services/firebase';
 
 export type SpinnerStyle = 'pulse' | 'dots' | 'ring';
 export type AnimationStyle = 'none' | 'fade' | 'slide';
@@ -93,16 +93,14 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return saved ? JSON.parse(saved) : defaultSettings;
   });
 
-  // Sync with Firestore for parity across deployments
+  // Listen for real-time changes from Firestore
   useEffect(() => {
-    const docRef = doc(db, 'settings', 'branding');
-    const unsubscribe = onSnapshot(docRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data() as BrandingSettings;
+    const unsubscribe = listenToBranding((data) => {
+      if (data) {
         setBranding(prev => ({ ...prev, ...data }));
+        localStorage.setItem('fml_branding_settings', JSON.stringify({ ...branding, ...data }));
       }
     });
-
     return () => unsubscribe();
   }, []);
 

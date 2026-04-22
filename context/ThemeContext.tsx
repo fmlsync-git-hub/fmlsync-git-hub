@@ -1,7 +1,7 @@
 
 import React, { createContext, useState, useEffect, useContext, useMemo } from 'react';
 import { THEMES, Theme } from '../themes';
-import { db, deleteField, doc, onSnapshot, setDoc } from '../services/firebase';
+import { db, deleteField, doc, listenToThemeSettings, setDoc } from '../services/firebase';
 
 type ThemeName = keyof typeof THEMES;
 
@@ -72,23 +72,18 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, storageK
         setThemeState(userTheme as ThemeName);
     }
 
-    // 2. Listener for Global/Developer Overrides
-    const themeRef = doc(db, 'settings', storageKey);
-    
-    const unsubscribe = onSnapshot(themeRef, docSnap => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.name && THEMES[data.name as ThemeName]) {
-          setThemeState(data.name as ThemeName);
-          localStorage.setItem(`${storageKey}_name`, data.name);
+    // 2. Listen for Real-Time Theme Overrides
+    const unsubscribe = listenToThemeSettings(storageKey, (data) => {
+        if (data) {
+          if (data.name && THEMES[data.name as ThemeName]) {
+            setThemeState(data.name as ThemeName);
+            localStorage.setItem(`${storageKey}_name`, data.name);
+          }
+          if (data.customColors) {
+            setCustomColorsState(data.customColors);
+            localStorage.setItem(`${storageKey}_customColors`, JSON.stringify(data.customColors));
+          }
         }
-        if (data.customColors) {
-          setCustomColorsState(data.customColors);
-          localStorage.setItem(`${storageKey}_customColors`, JSON.stringify(data.customColors));
-        }
-      }
-    }, error => {
-        console.error(`Error listening to theme settings ('${storageKey}'):`, error);
     });
 
     return () => unsubscribe();

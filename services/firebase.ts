@@ -90,17 +90,8 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
   throw new Error(JSON.stringify(errInfo));
 }
 
-// Connection Test
-async function testConnection() {
-  try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-  } catch (error) {
-    if(error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration. The client is offline.");
-    }
-  }
-}
-testConnection();
+// Connection Test - Removed to save quota
+// async function testConnection() { ... }
 
 // Helper to safely handle snapshot errors
 export const safeSnapshot = <T>(
@@ -257,6 +248,31 @@ export const listenToAccessiblePassengersRtdb = (user: User, callback: (passenge
 
 export const listenToUsersAndSettingsRtdb = (callback: (users: (User & UserSettings)[]) => void) => {
     return listenToUsersAndSettings(callback);
+};
+
+export const listenToBranding = (callback: (settings: any) => void) => {
+    const docRef = doc(db, 'settings', 'branding');
+    return safeSnapshot(docRef, callback, (docSnap) => {
+        return docSnap.exists() ? docSnap.data() : null;
+    }, null);
+};
+
+export const listenToThemeSettings = (storageKey: string, callback: (data: any) => void) => {
+    const docRef = doc(db, 'settings', storageKey);
+    return safeSnapshot(docRef, callback, (docSnap) => {
+        return docSnap.exists() ? docSnap.data() : null;
+    }, null);
+};
+
+export const getCompanySettings = async () => {
+    const docRef = doc(db, 'settings', 'companies');
+    try {
+        const snapshot = await getDoc(docRef);
+        return snapshot.exists() ? snapshot.data() : { custom: [], appearances: {}, order: [] };
+    } catch (error) {
+        console.error("Error fetching company settings:", error);
+        return { custom: [], appearances: {}, order: [] };
+    }
 };
 
 export const listenToCompanySettings = (callback: (settings: any) => void) => {
