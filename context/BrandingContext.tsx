@@ -131,16 +131,13 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   
 
   const updateBranding = (settings: Partial<BrandingSettings>) => {
-    setBranding(prev => {
-        const newSettings = { ...prev, ...settings };
-        localStorage.setItem('fml_branding_settings', JSON.stringify(newSettings));
-        
-        // Persist to Firestore
-        setDoc(doc(db, 'settings', 'branding'), newSettings, { merge: true })
-            .catch(err => console.error("Error saving branding to Firestore:", err));
-
-        return newSettings;
-    });
+    const newSettings = { ...branding, ...settings };
+    setBranding(newSettings);
+    localStorage.setItem('fml_branding_settings', JSON.stringify(newSettings));
+    
+    // Persist to Firestore
+    setDoc(doc(db, 'settings', 'branding'), newSettings, { merge: true })
+        .catch(err => console.error("Error saving branding to Firestore:", err));
   };
 
   const value = useMemo(() => ({ ...branding, updateBranding }), [branding]);

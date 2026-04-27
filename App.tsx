@@ -11,7 +11,7 @@ import { ArrowUturnLeftIcon } from './components/icons';
 import ErrorBoundary from './components/ErrorBoundary';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { NotificationService } from './services/notificationService';
-import { listenToUsersAndSettings } from './services/firebase';
+import { listenToCurrentUser } from './services/firebase';
 
 const LoginScreen = lazy(() => import('./screens/LoginScreen'));
 const MainApp = lazy(() => import('./screens/MainApp'));
@@ -89,8 +89,7 @@ const AppContent: React.FC = () => {
     let unsubscribe: (() => void) | undefined;
     
     if (currentUser) {
-        unsubscribe = listenToUsersAndSettings((allUsers: (User & UserSettings)[]) => {
-            const updatedUser = allUsers.find(u => u.username === currentUser.username);
+        unsubscribe = listenToCurrentUser(currentUser.username, (updatedUser) => {
             if (updatedUser) {
                 // Check if anything actually changed before updating state to avoid loops
                 if (JSON.stringify(updatedUser) !== JSON.stringify(currentUser)) {

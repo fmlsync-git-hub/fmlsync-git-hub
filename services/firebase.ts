@@ -32,8 +32,10 @@ import { DEFAULT_USERS } from './users';
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Using standard Firestore initialization for better real-time responsiveness
-export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
+// Force long polling to avoid WebSocket issues in some environments
+export const db = initializeFirestore(app, {
+    experimentalForceLongPolling: true,
+}, (firebaseConfig as any).firestoreDatabaseId);
 
 export const auth = getAuth(app);
 
@@ -164,6 +166,13 @@ export const listenToPassengersByCompany = (companyId: string, callback: (passen
     return safeSnapshot(q, callback, (snapshot) => {
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Passenger));
     }, [], onError);
+};
+
+export const listenToCurrentUser = (username: string, callback: (user: User & UserSettings) => void) => {
+    const docRef = doc(db, 'usersSettings', username);
+    return safeSnapshot(docRef, callback, (docSnap: any) => {
+        return docSnap.exists() ? ({ username, ...docSnap.data() } as any) : null;
+    }, null);
 };
 
 export const listenToUsersAndSettings = (callback: (users: (User & UserSettings)[]) => void) => {
