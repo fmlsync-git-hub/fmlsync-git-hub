@@ -3,7 +3,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useCompanies } from '../context/CompanyContext';
 import { useDateTime, DateTimeSettings } from '../context/DateTimeContext';
 import { Company, NotificationSettings, Passenger, TwilioSettings } from '../types';
-import { listenToNotificationSettings, updateNotificationSettings, getAllPassengers, getTwilioSettings, updateTwilioSettings, factoryResetApplication } from '../services/firebase';
+import { 
+    listenToNotificationSettings, 
+    updateNotificationSettings, 
+    getAllPassengers, 
+    getTwilioSettings, 
+    listenToTwilioSettings, 
+    updateTwilioSettings, 
+    factoryResetApplication 
+} from '../services/firebase';
 import { CompanyAppearanceModal } from '../components/CompanyAppearanceModal';
 import { AddCompanyModal } from '../components/AddCompanyModal';
 import { ChecklistManager } from '../components/ChecklistManager';
@@ -89,10 +97,11 @@ const TwilioSettingsEditor: React.FC = () => {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        getTwilioSettings().then(data => {
+        const unsubscribe = listenToTwilioSettings(data => {
             setSettings(data);
             setIsLoading(false);
         });
+        return () => unsubscribe();
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

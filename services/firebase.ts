@@ -615,6 +615,13 @@ export const listenToNotificationSettings = (callback: (settings: NotificationSe
     }, null);
 };
 
+export const listenToTwilioSettings = (callback: (settings: TwilioSettings) => void) => {
+    const docRef = doc(db, 'settings', 'twilio');
+    return safeSnapshot(docRef, callback, (docSnap: any) => {
+        return docSnap.exists() ? docSnap.data() as TwilioSettings : { accountSid: '', authToken: '', fromNumber: '' };
+    }, { accountSid: '', authToken: '', fromNumber: '' });
+};
+
 // --- In-App Notifications ---
 
 export const addInAppNotification = async (data: Omit<InAppNotification, 'id' | 'timestamp'>) => {
