@@ -106,6 +106,12 @@ const RootSidebar: React.FC<RootSidebarProps> = ({ isOpen, setIsOpen, activeScre
             onClick={() => handleNavigate('logs')}
             />
             <NavItem
+            label="Reports"
+            icon={DocumentTextIcon}
+            isActive={activeScreen === 'reports'}
+            onClick={() => handleNavigate('reports')}
+            />
+            <NavItem
             label="Error Logs"
             icon={BugAntIcon}
             isActive={activeScreen === 'errors'}

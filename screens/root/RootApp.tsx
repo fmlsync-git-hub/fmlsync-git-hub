@@ -18,9 +18,10 @@ const DuplicateManagementScreen = lazy(() => import('./DuplicateManagementScreen
 const TrashBinScreen = lazy(() => import('./TrashBinScreen'));
 const MyAccountScreen = lazy(() => import('../MyAccountScreen'));
 const SecurityScreen = lazy(() => import('./SecurityScreen'));
+const ReportsScreen = lazy(() => import('./ReportsScreen'));
 
 
-export type RootScreen = 'dashboard' | 'users' | 'logs' | 'errors' | 'appearance' | 'data_management' | 'my_account' | 'security' | 'duplicates' | 'trash_bin';
+export type RootScreen = 'dashboard' | 'users' | 'logs' | 'errors' | 'appearance' | 'data_management' | 'my_account' | 'security' | 'duplicates' | 'trash_bin' | 'reports';
 
 interface RootAppProps {
   currentUser: User & UserSettings;
@@ -61,6 +62,8 @@ const RootApp: React.FC<RootAppProps> = ({ currentUser, onLogout, onLoginAs }) =
         return <MyAccountScreen currentUser={currentUser} onLogout={onLogout} />;
       case 'security':
         return <SecurityScreen />;
+      case 'reports':
+        return <ReportsScreen />;
       default:
         return <RootDashboardScreen />;
     }

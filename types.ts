@@ -4,7 +4,7 @@ import { LayoutName } from './context/LayoutContext';
 
 // Moved from MainApp.tsx to be globally accessible
 // FIX: Added 'performance' to the Screen type to allow it as a valid menu item.
-export type Screen = 'dashboard' | 'company_flow' | 'travel' | 'documents' | 'notifications' | 'technical' | 'settings' | 'appearance' | 'help' | 'user_management' | 'my_account' | 'performance' | 'client_dashboard' | 'ui_designer' | 'booking_dashboard' | 'live_map' | 'ai_assistant' | 'summary_dashboard' | 'chat' | 'restore_points' | 'duplicates' | 'trash_bin' | 'backend_diagnostic';
+export type Screen = 'dashboard' | 'company_flow' | 'travel' | 'documents' | 'notifications' | 'technical' | 'settings' | 'appearance' | 'help' | 'user_management' | 'my_account' | 'performance' | 'client_dashboard' | 'ui_designer' | 'booking_dashboard' | 'live_map' | 'ai_assistant' | 'summary_dashboard' | 'chat' | 'restore_points' | 'duplicates' | 'trash_bin' | 'backend_diagnostic' | 'reports';
 
 export type DuplicateType = 'passenger' | 'ticket' | 'visa' | 'permit';
 
