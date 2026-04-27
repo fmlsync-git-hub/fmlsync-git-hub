@@ -60,10 +60,24 @@ const DataGrid: React.FC<{ children: React.ReactNode }> = ({ children }) => (
      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">{children}</div>
 );
 
+const safeString = (val: any): string => {
+    if (val === null || val === undefined) return '';
+    if (typeof val === 'object') {
+        try {
+            return JSON.stringify(val);
+        } catch (e) {
+            return '[Object]';
+        }
+    }
+    return String(val);
+};
+
 const DataField: React.FC<{ label: string, value: React.ReactNode }> = ({ label, value }) => (
     <div>
         <p className="text-xs font-medium text-text-secondary uppercase tracking-wider mb-1">{label}</p>
-        <p className="text-base font-medium text-text-primary break-words">{value || 'N/A'}</p>
+        <div className="text-base font-medium text-text-primary break-words">
+            {React.isValidElement(value) ? value : safeString(value) || 'N/A'}
+        </div>
     </div>
 );
 
@@ -303,7 +317,7 @@ export const GlobalPassengerDetailModal: React.FC<GlobalPassengerDetailModalProp
                                 <h4 className="text-sm font-bold text-primary mb-3 uppercase tracking-wide">Upcoming Flights</h4>
                                 <div className="space-y-2">
                                     {upcomingTickets.map(ticket => (
-                                        <div key={ticket.id} className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex justify-between items-center">
+                                        <div key={String(ticket.id)} className="p-3 rounded-lg border border-primary/30 bg-primary/5 flex justify-between items-center">
                                             <div>
                                                 <div className="font-bold text-text-primary">{ticket.departureCity || 'N/A'} <span className="text-text-secondary">→</span> {ticket.arrivalCity || 'N/A'}</div>
                                                 <div className="text-xs text-text-secondary">{ticket.airline} • {ticket.ticketNumber}</div>
@@ -323,7 +337,7 @@ export const GlobalPassengerDetailModal: React.FC<GlobalPassengerDetailModalProp
                                 <h4 className="text-sm font-bold text-text-secondary mb-3 uppercase tracking-wide">Past Flights</h4>
                                 <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                     {pastTickets.map(ticket => (
-                                        <div key={ticket.id} className="p-3 rounded-lg border border-border-default bg-surface-soft flex justify-between items-center opacity-80 hover:opacity-100 transition-opacity">
+                                        <div key={String(ticket.id)} className="p-3 rounded-lg border border-border-default bg-surface-soft flex justify-between items-center opacity-80 hover:opacity-100 transition-opacity">
                                             <div>
                                                 <div className="font-medium text-text-primary text-sm">{ticket.departureCity || 'N/A'} <span className="text-text-secondary">→</span> {ticket.arrivalCity || 'N/A'}</div>
                                                 <div className="text-xs text-text-secondary">{ticket.airline}</div>
@@ -344,7 +358,7 @@ export const GlobalPassengerDetailModal: React.FC<GlobalPassengerDetailModalProp
                 </Card>
 
                 {passports.map((passport: PassportData, index: number) => (
-                    <Card key={passport.id}>
+                    <Card key={String(passport.id || index)}>
                         <CardHeader title={`Passport Information #${index + 1}`} />
                         <DataGrid>
                             <DataField label="First Names" value={passport.firstNames} />
@@ -381,7 +395,7 @@ export const GlobalPassengerDetailModal: React.FC<GlobalPassengerDetailModalProp
                 )}
                 
                 {visas.map((visa: VisaData, index: number) => (
-                    <Card key={visa.id}>
+                    <Card key={String(visa.id || index)}>
                         <CardHeader title={`Visa Details #${index + 1}`} />
                         <DataGrid>
                             <DataField label="Visa No." value={visa.visaNumber} />
@@ -399,7 +413,7 @@ export const GlobalPassengerDetailModal: React.FC<GlobalPassengerDetailModalProp
                 ))}
 
                 {permits.map((permit: PermitData, index: number) => (
-                    <Card key={permit.id}>
+                    <Card key={String(permit.id || index)}>
                         <CardHeader title={`Permit Details #${index + 1}`} />
                         <DataGrid>
                             <DataField label="Permit No." value={permit.permitNumber} />

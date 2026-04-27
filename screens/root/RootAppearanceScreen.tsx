@@ -233,8 +233,17 @@ const RootAppearanceScreen: React.FC = () => {
     const currentPatternOpacity = parseFloat(getVal('--opacity-background-pattern') || '1') * 100;
 
 
-    const handleThemeSelect = (themeKey: keyof typeof THEMES) => {
+    const handleThemeSelect = async (themeKey: keyof typeof THEMES) => {
         setTheme(themeKey);
+        // If developer, we want to optionally push this globally immediately
+        if (currentUser.role === 'developer') {
+             // Automate global sync if requested or just push to admin theme too
+             const { updateBranding: _, ...currentBranding } = brandingContext;
+             await deployGlobalApplicationSettings(
+                { name: themeKey, customColors: customColors },
+                currentBranding
+             );
+        }
     };
 
     const handleUpdateColors = (updates: { [key: string]: string }) => {

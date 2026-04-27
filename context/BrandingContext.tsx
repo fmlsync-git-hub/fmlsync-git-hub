@@ -98,7 +98,21 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const unsubscribe = listenToBranding((data) => {
       if (data) {
         setBranding(prev => {
-            const next = { ...prev, ...data };
+            // Defensive: ensure all fields are primitive where expected
+            const sanitizedData = { ...data };
+            
+            // Critical identity fields
+            if (sanitizedData.appName !== undefined) sanitizedData.appName = String(sanitizedData.appName || '');
+            if (sanitizedData.brandColor !== undefined) sanitizedData.brandColor = String(sanitizedData.brandColor || '');
+            if (sanitizedData.fontColor !== undefined) sanitizedData.fontColor = String(sanitizedData.fontColor || '');
+            if (sanitizedData.headerHeight !== undefined) sanitizedData.headerHeight = Number(sanitizedData.headerHeight || 64);
+            if (sanitizedData.sidebarWidth !== undefined) sanitizedData.sidebarWidth = Number(sanitizedData.sidebarWidth || 256);
+
+            const next = { ...prev, ...sanitizedData };
+            
+            // Log for debugging global sync
+            console.log("[Branding] Real-time update received:", sanitizedData.appName);
+            
             if (JSON.stringify(prev) !== JSON.stringify(next)) {
                 localStorage.setItem('fml_branding_settings', JSON.stringify(next));
                 return next;

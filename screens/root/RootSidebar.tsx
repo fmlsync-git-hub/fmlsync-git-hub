@@ -75,8 +75,8 @@ const RootSidebar: React.FC<RootSidebarProps> = ({ isOpen, setIsOpen, activeScre
             {appLogo && (
                 <img src={appLogo} alt="Logo" className="h-8 w-8 object-contain" />
             )}
-            <span className="text-lg font-bold truncate" style={{ color: brandColor || 'inherit' }}>
-                {appName}
+            <span className="text-lg font-bold truncate" style={{ color: typeof brandColor === 'string' ? brandColor : 'inherit' }}>
+                {typeof appName === 'string' ? appName : String(appName || '')}
             </span>
         </div>
 

@@ -19,6 +19,12 @@ export const XMarkIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     </svg>
 );
 
+export const PrinterIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6.72 6.72H3.75A2.25 2.25 0 0 0 1.5 8.97V15a2.25 2.25 0 0 0 2.25 2.25h16.5A2.25 2.25 0 0 0 22.5 15V8.97a2.25 2.25 0 0 0-2.25-2.25h-2.97M6.72 6.72V3.75A2.25 2.25 0 0 1 8.97 1.5h6.06a2.25 2.25 0 0 1 2.25 2.25v2.97m-10.5 0h10.5M6.72 16.5v3.75c0 .621.504 1.125 1.125 1.125h8.375c.621 0 1.125-.504 1.125-1.125V16.5M16.5 10.5h.008v.008H16.5V10.5Zm-9 0h.008v.008H7.5V10.5Z" />
+    </svg>
+);
+
 export const Bars3Icon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />

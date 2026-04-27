@@ -193,7 +193,7 @@ const AppContent: React.FC = () => {
   }
 
   return (
-    <ThemeProvider storageKey={themeStorageKey} key={themeStorageKey + (effectiveUser?.username || 'none')}>
+    <ThemeProvider storageKey={String(themeStorageKey)} key={String(themeStorageKey) + String(effectiveUser?.username || 'none')}>
         {renderApp()}
         {viewingAsUser && (
             <ViewingAsBanner user={viewingAsUser} onStop={handleStopViewingAs} />
