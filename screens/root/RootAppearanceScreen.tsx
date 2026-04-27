@@ -9,6 +9,7 @@ import { Screen, UserRole, ThemePreset } from '../../types';
 import { ColorPickerControl } from '../../components/ColorPickerControl';
 import { AppBrandingEditor } from '../../components/AppBrandingEditor';
 import { LayoutName, useLayout } from '../../context/LayoutContext';
+import { listenToThemePresets, saveThemePreset, deleteThemePreset, applyDimensionsToRoles } from '../../services/firebase';
 
 // --- Helper Functions ---
 
@@ -175,6 +176,12 @@ const RootAppearanceScreen: React.FC = () => {
     const activeThemeColors = THEMES[activeTheme].colors;
     const [applyingSample, setApplyingSample] = useState<Sample | null>(null);
     const [successMessage, setSuccessMessage] = useState('');
+    const [themePresets, setThemePresets] = useState<ThemePreset[]>([]);
+
+    useEffect(() => {
+        const unsubscribe = listenToThemePresets(setThemePresets);
+        return () => unsubscribe();
+    }, []);
     
     // Pattern Upload
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -278,7 +285,6 @@ const RootAppearanceScreen: React.FC = () => {
         setIsSavingPreset(true);
         
         try {
-            const presets = JSON.parse(localStorage.getItem('fml_theme_presets') || '[]');
             const newPreset: ThemePreset = {
                 id: Date.now().toString(),
                 name: newPresetName.trim(),
@@ -286,8 +292,8 @@ const RootAppearanceScreen: React.FC = () => {
                 createdAt: Date.now(),
                 colors: customColors as { [key: string]: string },
             };
-            presets.push(newPreset);
-            localStorage.setItem('fml_theme_presets', JSON.stringify(presets));
+            
+            await saveThemePreset(newPreset);
             
             setSuccessMessage(`Preset "${newPresetName}" saved successfully.`);
             setTimeout(() => setSuccessMessage(''), 3000);
@@ -298,6 +304,17 @@ const RootAppearanceScreen: React.FC = () => {
             alert("Failed to save preset.");
         } finally {
             setIsSavingPreset(false);
+        }
+    };
+
+    const handleDeletePreset = async (presetId: string) => {
+        if (!confirm('Are you sure you want to delete this preset?')) return;
+        try {
+            await deleteThemePreset(presetId);
+            setSuccessMessage('Preset deleted.');
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (e) {
+            console.error("Error deleting preset:", e);
         }
     };
 
@@ -542,6 +559,50 @@ const RootAppearanceScreen: React.FC = () => {
                             <button onClick={() => setIsPresetModalOpen(false)} className="px-4 py-2 text-sm font-semibold bg-surface-soft text-text-primary rounded-md">Cancel</button>
                             <button onClick={handleSavePreset} disabled={!newPresetName.trim() || isSavingPreset} className="px-4 py-2 text-sm font-semibold bg-primary text-white rounded-md">{isSavingPreset ? 'Saving...' : 'Save'}</button>
                         </div>
+                    </div>
+                </div>
+            )}
+            
+            {/* Saved Presets Section */}
+            {themePresets.length > 0 && (
+                <div className="bg-surface p-6 rounded-lg shadow-md border border-border-default mb-6">
+                    <h3 className="text-lg font-semibold text-text-primary mb-4 flex items-center gap-2">
+                        <SparklesIcon className="h-6 w-6 text-text-secondary" />
+                        Saved Color Presets
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {themePresets.map((preset) => (
+                            <div key={preset.id} className="group relative">
+                                <button
+                                    onClick={() => setCustomColors(preset.colors)}
+                                    className="w-full flex items-center justify-between p-3 rounded-lg border border-border-default hover:border-primary hover:bg-primary/5 transition-all text-left"
+                                >
+                                    <div>
+                                        <span className="font-medium text-text-primary block">{preset.name}</span>
+                                        <span className="text-[10px] text-text-secondary">By {preset.createdBy}</span>
+                                    </div>
+                                    <div className="flex gap-1">
+                                        {Object.entries(preset.colors).slice(0, 3).map(([key, val]) => (
+                                            <div 
+                                                key={key} 
+                                                className="h-3 w-3 rounded-full border border-white/20 shadow-sm"
+                                                style={{ backgroundColor: val }}
+                                            />
+                                        ))}
+                                    </div>
+                                </button>
+                                <button 
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeletePreset(preset.id);
+                                    }}
+                                    className="absolute -top-1 -right-1 p-1 bg-error text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                    title="Delete Preset"
+                                >
+                                    <TrashIcon className="h-3 w-3" />
+                                </button>
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}

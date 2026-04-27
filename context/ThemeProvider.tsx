@@ -16,6 +16,7 @@ interface ThemeContextType {
   setTheme: (name: ThemeName) => void;
   customColors: CustomColors;
   setCustomColor: (key: keyof CustomColors, value: string) => void;
+  setCustomColors: (colors: CustomColors) => void;
   resetCustomColors: () => void;
 }
 
@@ -42,22 +43,27 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, storageK
     // If a user-specific theme is passed, use it and stop listening for global changes.
     if (userTheme && THEMES[userTheme as ThemeName]) {
         setThemeState(userTheme as ThemeName);
-        // User-specific themes don't have custom colors in this implementation, so we reset them.
         setCustomColorsState({});
         return; 
     }
 
-    // Only set up listener if no userTheme is provided.
     const themeRef = doc(db, 'settings', storageKey);
     
     const unsubscribe = safeSnapshot(
       themeRef,
       (data: any) => {
-        // We use localStorage now
+        if (data) {
+          if (data.name && THEMES[data.name as ThemeName]) {
+            setThemeState(data.name as ThemeName);
+          }
+          if (data.customColors) {
+            setCustomColorsState(data.customColors);
+          } else {
+            setCustomColorsState({});
+          }
+        }
       },
-      (docSnap) => {
-        return { name: theme, customColors };
-      },
+      (docSnap) => docSnap.exists() ? docSnap.data() : { name: 'royalIndigo', customColors: {} },
       { name: 'royalIndigo', customColors: {} },
       (error) => {
         console.error(`Error listening to theme settings ('${storageKey}'):`, error);
@@ -111,11 +117,19 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children, storageK
   };
 
 
+  const setCustomColors = (colors: CustomColors) => {
+    setCustomColorsState(colors);
+    localStorage.setItem(`${storageKey}_customColors`, JSON.stringify(colors));
+    setDoc(doc(db, 'settings', storageKey), { customColors: colors }, { merge: true })
+      .catch(error => console.error("Could not save custom colors:", error));
+  };
+
   const value = useMemo(() => ({ 
       theme, 
       setTheme,
       customColors,
       setCustomColor,
+      setCustomColors,
       resetCustomColors 
   }), [theme, customColors, storageKey]);
 

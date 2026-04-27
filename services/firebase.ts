@@ -221,12 +221,13 @@ export const listenToNotificationLogs = (limitNum: number, callback: (logs: Auto
     }, []);
 };
 
-export const listenToThemePresets = (callback: (presets: ThemePreset[]) => void) => {
-    const path = 'settings/themePresets';
-    const docRef = doc(db, 'settings', 'themePresets');
-    return safeSnapshot(docRef, callback, (docSnap: any) => {
-        return docSnap.exists() ? (docSnap.data().list || []) : [];
-    }, []);
+export const listenToThemePresets = (onUpdate: (presets: ThemePreset[]) => void) => {
+    return safeSnapshot(
+        collection(db, 'settings', 'themePresets', 'items'),
+        onUpdate,
+        (snapshot: any) => snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })),
+        []
+    );
 };
 
 export const listenToDuplicateAlerts = (callback: any) => {
@@ -541,13 +542,35 @@ export const updateUserCredentialsCF = async (oldUsername: string, newUsername: 
 
 export const applyLayoutToRoles = async (roles: string[], layoutData: any) => {};
 
-export const applyDimensionsToRoles = async (roles: string[], dimensions: any) => {};
+export const applyDimensionsToRoles = async (roles: string[], dimensions: any) => {
+    try {
+        for (const role of roles) {
+            await setDoc(doc(db, 'roleSettings', role), { dimensions }, { merge: true });
+        }
+    } catch (error) {
+        console.error("Error applying dimensions to roles:", error);
+    }
+};
 
 export const saveThemePreference = async (scope: string, themeData: any) => {};
 
-export const saveThemePreset = async (preset: any) => {};
+export const saveThemePreset = async (preset: any) => {
+    const path = `settings/themePresets/items/${preset.id}`;
+    try {
+        await setDoc(doc(db, 'settings', 'themePresets', 'items', preset.id), preset);
+    } catch (error) {
+        handleFirestoreError(error, OperationType.WRITE, path);
+    }
+};
 
-export const deleteThemePreset = async (presetId: string) => {};
+export const deleteThemePreset = async (presetId: string) => {
+    const path = `settings/themePresets/items/${presetId}`;
+    try {
+        await deleteDoc(doc(db, 'settings', 'themePresets', 'items', presetId));
+    } catch (error) {
+        handleFirestoreError(error, OperationType.DELETE, path);
+    }
+};
 
 export const restoreToPoint = async (pointId: string, username?: string) => {};
 

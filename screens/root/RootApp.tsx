@@ -80,7 +80,6 @@ const RootApp: React.FC<RootAppProps> = ({ currentUser, onLogout, onLoginAs }) =
   };
 
   return (
-    <ThemeProvider storageKey="developerTheme">
        <div className="min-h-screen w-full bg-background-margin flex flex-col items-center">
            <div className={`h-screen flex flex-col bg-background text-text-primary w-full ${getContainerClass()}`}>
               <RootHeader
@@ -112,7 +111,6 @@ const RootApp: React.FC<RootAppProps> = ({ currentUser, onLogout, onLoginAs }) =
               </div>
            </div>
        </div>
-    </ThemeProvider>
   );
 };
 

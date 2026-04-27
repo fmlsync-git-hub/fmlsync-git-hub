@@ -97,16 +97,18 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const unsubscribe = listenToBranding((data) => {
       if (data) {
-        setBranding(prev => ({ ...prev, ...data }));
+        setBranding(prev => {
+            const next = { ...prev, ...data };
+            if (JSON.stringify(prev) !== JSON.stringify(next)) {
+                localStorage.setItem('fml_branding_settings', JSON.stringify(next));
+                return next;
+            }
+            return prev;
+        });
       }
     });
     return () => unsubscribe();
   }, []);
-
-  // Persist branding changes to localStorage
-  useEffect(() => {
-    localStorage.setItem('fml_branding_settings', JSON.stringify(branding));
-  }, [branding]);
 
   // Inject Dynamic CSS Variables for Layout
   useEffect(() => {
