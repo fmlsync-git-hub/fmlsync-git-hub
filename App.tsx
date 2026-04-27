@@ -139,16 +139,21 @@ const AppContent: React.FC = () => {
   };
 
   const effectiveUser = viewingAsUser || currentUser;
+  const themeStorageKey = 'theme'; // Use global theme for everything as requested
 
   if (isInitializing || showSplash) {
       return <SplashScreen />;
   }
 
   if (!currentUser) {
-      return <LoginScreen onLogin={(user: User & UserSettings) => {
-          localStorage.setItem('fml_current_user', JSON.stringify(user));
-          setCurrentUser(user);
-      }} />;
+      return (
+        <ThemeProvider storageKey="theme">
+            <LoginScreen onLogin={(user: User & UserSettings) => {
+                localStorage.setItem('fml_current_user', JSON.stringify(user));
+                setCurrentUser(user);
+            }} />
+        </ThemeProvider>
+      );
   }
   
   const renderApp = () => {
@@ -161,9 +166,6 @@ const AppContent: React.FC = () => {
       }
 
       if (effectiveUser) {
-          // Force global theme sync by using the same storage key for all roles
-    const themeStorageKey = 'theme';
-          
           const AppToRender = () => {
             if (effectiveUser.role === 'client') {
                 return <ClientApp currentUser={effectiveUser} onLogout={handleLogout} />;
@@ -191,34 +193,32 @@ const AppContent: React.FC = () => {
   }
 
   return (
-      <>
+    <ThemeProvider storageKey={themeStorageKey} key={themeStorageKey + (effectiveUser?.username || 'none')}>
         {renderApp()}
         {viewingAsUser && (
             <ViewingAsBanner user={viewingAsUser} onStop={handleStopViewingAs} />
         )}
-      </>
+    </ThemeProvider>
   );
 };
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider>
-        <BrandingProvider>
-            <CompanyProvider>
-                <DateTimeProvider>
-                    <LayoutProvider>
-                        <div className="min-h-screen bg-background font-sans">
-                            <ErrorBoundary>
-                                <Suspense fallback={<SplashScreen />}>
-                                    <AppContent />
-                                </Suspense>
-                            </ErrorBoundary>
-                        </div>
-                    </LayoutProvider>
-                </DateTimeProvider>
-            </CompanyProvider>
-        </BrandingProvider>
-    </ThemeProvider>
+    <BrandingProvider>
+        <CompanyProvider>
+            <DateTimeProvider>
+                <LayoutProvider>
+                    <div className="min-h-screen bg-background font-sans">
+                        <ErrorBoundary>
+                            <Suspense fallback={<SplashScreen />}>
+                                <AppContent />
+                            </Suspense>
+                        </ErrorBoundary>
+                    </div>
+                </LayoutProvider>
+            </DateTimeProvider>
+        </CompanyProvider>
+    </BrandingProvider>
   );
 };
 

@@ -9,7 +9,7 @@ import { Screen, UserRole, ThemePreset } from '../../types';
 import { ColorPickerControl } from '../../components/ColorPickerControl';
 import { AppBrandingEditor } from '../../components/AppBrandingEditor';
 import { LayoutName, useLayout } from '../../context/LayoutContext';
-import { listenToThemePresets, saveThemePreset, deleteThemePreset, applyDimensionsToRoles } from '../../services/firebase';
+import { listenToThemePresets, saveThemePreset, deleteThemePreset, applyDimensionsToRoles, saveThemePreference } from '../../services/firebase';
 
 // --- Helper Functions ---
 
@@ -177,6 +177,7 @@ const RootAppearanceScreen: React.FC = () => {
     const [applyingSample, setApplyingSample] = useState<Sample | null>(null);
     const [successMessage, setSuccessMessage] = useState('');
     const [themePresets, setThemePresets] = useState<ThemePreset[]>([]);
+    const [isDeploying, setIsDeploying] = useState(false);
 
     useEffect(() => {
         const unsubscribe = listenToThemePresets(setThemePresets);
@@ -280,6 +281,23 @@ const RootAppearanceScreen: React.FC = () => {
         setCustomColors({});
     };
 
+    const handleDeployGlobal = async () => {
+        setIsDeploying(true);
+        try {
+            await saveThemePreference('both', {
+                name: activeTheme,
+                customColors: customColors
+            });
+            setSuccessMessage("Theme deployed globally to all users!");
+            setTimeout(() => setSuccessMessage(''), 3000);
+        } catch (e) {
+             console.error("Error deploying theme:", e);
+             alert("Deployment failed.");
+        } finally {
+            setIsDeploying(false);
+        }
+    };
+
     const handleSavePreset = async () => {
         if (!newPresetName.trim()) return;
         setIsSavingPreset(true);
@@ -328,11 +346,21 @@ const RootAppearanceScreen: React.FC = () => {
                     <span>{successMessage}</span>
                 </div>
             )}
-            <div>
-                <h2 className="text-2xl font-bold text-text-primary">Global Settings</h2>
-                <p className="mt-1 text-text-secondary">
-                    Define and apply themes, branding, and features. Changes made here affect all users.
-                </p>
+            <div className="flex justify-between items-start">
+                <div>
+                    <h2 className="text-2xl font-bold text-text-primary">Global Settings</h2>
+                    <p className="mt-1 text-text-secondary">
+                        Define and apply themes, branding, and features. Changes made here affect all users.
+                    </p>
+                </div>
+                <button
+                    onClick={handleDeployGlobal}
+                    disabled={isDeploying}
+                    className="flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-lg shadow-lg hover:bg-primary-dark transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100"
+                >
+                    <SparklesIcon className="h-5 w-5" />
+                    {isDeploying ? 'Deploying...' : 'Deploy to All Users'}
+                </button>
             </div>
 
             <div className="bg-surface p-6 rounded-lg shadow-md border border-border-default">

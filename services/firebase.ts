@@ -19,6 +19,7 @@ import {
     serverTimestamp, 
     deleteField,
     getDocFromServer,
+    writeBatch,
     Timestamp,
     DocumentData
 } from 'firebase/firestore';
@@ -552,7 +553,26 @@ export const applyDimensionsToRoles = async (roles: string[], dimensions: any) =
     }
 };
 
-export const saveThemePreference = async (scope: string, themeData: any) => {};
+export const saveThemePreference = async (scope: 'developer' | 'admin' | 'both', themeData: any) => {
+    const batch = writeBatch(db);
+    
+    if (scope === 'developer' || scope === 'both') {
+        const devRef = doc(db, 'settings', 'developerTheme');
+        batch.set(devRef, themeData, { merge: true });
+    }
+    
+    if (scope === 'admin' || scope === 'both') {
+        const adminRef = doc(db, 'settings', 'theme');
+        batch.set(adminRef, themeData, { merge: true });
+    }
+    
+    try {
+        await batch.commit();
+    } catch (error) {
+        console.error("Error saving theme preference:", error);
+        throw error;
+    }
+};
 
 export const saveThemePreset = async (preset: any) => {
     const path = `settings/themePresets/items/${preset.id}`;
