@@ -2,6 +2,7 @@
 import React from 'react';
 import { User, UserSettings } from '../../types';
 import { PowerIcon, HomeIcon, XMarkIcon } from '../../components/icons';
+import { useBranding } from '../../context/BrandingContext';
 
 interface ClientSidebarProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ const NavItem: React.FC<{
 
 
 const ClientSidebar: React.FC<ClientSidebarProps> = ({ isOpen, setIsOpen, onLogout, currentUser }) => {
+  const { appLogo, appName, brandColor } = useBranding();
 
   return (
     <>
@@ -40,6 +42,15 @@ const ClientSidebar: React.FC<ClientSidebarProps> = ({ isOpen, setIsOpen, onLogo
                 </button>
             </div>
             
+            <div className="flex items-center gap-3 px-2 mb-6">
+                {appLogo && (
+                    <img src={appLogo} alt="Logo" className="h-8 w-8 object-contain" />
+                )}
+                <span className="text-lg font-bold truncate" style={{ color: brandColor || 'inherit' }}>
+                    {appName}
+                </span>
+            </div>
+
             <div className="px-2 mb-6">
                 <span className="text-xs font-semibold text-info bg-info/10 px-2 py-1 rounded-full">
                     CLIENT PORTAL

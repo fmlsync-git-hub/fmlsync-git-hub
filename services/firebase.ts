@@ -574,6 +574,27 @@ export const saveThemePreference = async (scope: 'developer' | 'admin' | 'both',
     }
 };
 
+export const deployGlobalApplicationSettings = async (themeData: any, brandingData: any) => {
+    const batch = writeBatch(db);
+    
+    // 1. Unified Theme (Admin & Dev)
+    const adminThemeRef = doc(db, 'settings', 'theme');
+    const devThemeRef = doc(db, 'settings', 'developerTheme');
+    batch.set(adminThemeRef, themeData, { merge: true });
+    batch.set(devThemeRef, themeData, { merge: true });
+    
+    // 2. Global Branding
+    const brandingRef = doc(db, 'settings', 'branding');
+    batch.set(brandingRef, brandingData, { merge: true });
+    
+    try {
+        await batch.commit();
+    } catch (error) {
+        console.error("Error deploying global settings:", error);
+        throw error;
+    }
+};
+
 export const saveThemePreset = async (preset: any) => {
     const path = `settings/themePresets/items/${preset.id}`;
     try {

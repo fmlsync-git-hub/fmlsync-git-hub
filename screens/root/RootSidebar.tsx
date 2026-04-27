@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { User, UserSettings, DuplicateAlert } from '../../types';
 import { RootScreen } from './RootApp';
 import { ChartPieIcon, UsersIcon, PowerIcon, DocumentTextIcon, BugAntIcon, PaintBrushIcon, ServerStackIcon, UserCircleIcon, ShieldCheckIcon, XMarkIcon, DocumentDuplicateIcon, TrashIcon } from '../../components/icons';
+import { useBranding } from '../../context/BrandingContext';
 
 interface RootSidebarProps {
   isOpen: boolean;
@@ -39,6 +40,7 @@ const NavItem: React.FC<{
 );
 
 const RootSidebar: React.FC<RootSidebarProps> = ({ isOpen, setIsOpen, activeScreen, onNavigate, onLogout, currentUser }) => {
+  const { appLogo, appName, brandColor } = useBranding();
   const [alertCount, setAlertCount] = useState(0);
   const [trashCount, setTrashCount] = useState(0);
 
@@ -67,6 +69,15 @@ const RootSidebar: React.FC<RootSidebarProps> = ({ isOpen, setIsOpen, activeScre
              <button onClick={() => setIsOpen(false)} className="p-1 text-on-sidebar/70 hover:text-on-sidebar">
                 <XMarkIcon className="h-6 w-6"/>
             </button>
+        </div>
+
+        <div className="flex items-center gap-3 px-2 mb-6">
+            {appLogo && (
+                <img src={appLogo} alt="Logo" className="h-8 w-8 object-contain" />
+            )}
+            <span className="text-lg font-bold truncate" style={{ color: brandColor || 'inherit' }}>
+                {appName}
+            </span>
         </div>
 
         <div className="px-2 mb-6">

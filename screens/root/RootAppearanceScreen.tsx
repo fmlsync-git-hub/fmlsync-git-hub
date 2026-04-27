@@ -9,7 +9,7 @@ import { Screen, UserRole, ThemePreset } from '../../types';
 import { ColorPickerControl } from '../../components/ColorPickerControl';
 import { AppBrandingEditor } from '../../components/AppBrandingEditor';
 import { LayoutName, useLayout } from '../../context/LayoutContext';
-import { listenToThemePresets, saveThemePreset, deleteThemePreset, applyDimensionsToRoles, saveThemePreference } from '../../services/firebase';
+import { listenToThemePresets, saveThemePreset, deleteThemePreset, applyDimensionsToRoles, saveThemePreference, deployGlobalApplicationSettings } from '../../services/firebase';
 
 // --- Helper Functions ---
 
@@ -171,7 +171,8 @@ const RootAppearanceScreen: React.FC = () => {
         setCustomColors
     } = useTheme();
     
-    const { featureFlags, updateBranding } = useBranding();
+    const brandingContext = useBranding();
+    const { featureFlags, updateBranding } = brandingContext;
     const [scope, setScope] = useState<'developer' | 'admin' | 'both'>('both');
     const activeThemeColors = THEMES[activeTheme].colors;
     const [applyingSample, setApplyingSample] = useState<Sample | null>(null);
@@ -284,15 +285,22 @@ const RootAppearanceScreen: React.FC = () => {
     const handleDeployGlobal = async () => {
         setIsDeploying(true);
         try {
-            await saveThemePreference('both', {
-                name: activeTheme,
-                customColors: customColors
-            });
-            setSuccessMessage("Theme deployed globally to all users!");
-            setTimeout(() => setSuccessMessage(''), 3000);
+            // Get current branding data from context (excluding updateBranding function)
+            const { updateBranding: _, ...currentBranding } = brandingContext;
+
+            await deployGlobalApplicationSettings(
+                {
+                    name: activeTheme,
+                    customColors: customColors
+                },
+                currentBranding
+            );
+            
+            setSuccessMessage("Global Push Success: All themes, branding, and feature flags have been deployed to all users!");
+            setTimeout(() => setSuccessMessage(''), 5000);
         } catch (e) {
-             console.error("Error deploying theme:", e);
-             alert("Deployment failed.");
+             console.error("Error deploying settings:", e);
+             alert("Global Deployment failed. Check console for details.");
         } finally {
             setIsDeploying(false);
         }
