@@ -28,6 +28,7 @@ const AdminUserManagementScreen = lazy(() => import('./AdminUserManagementScreen
 const RestorePointsScreen = lazy(() => import('./RestorePointsScreen'));
 const MyAccountScreen = lazy(() => import('./MyAccountScreen'));
 const UIDesignerScreen = lazy(() => import('./UIDesignerScreen'));
+const ReportsScreen = lazy(() => import('./root/ReportsScreen'));
 const AssistantChat = lazy(() => import('../components/AssistantChat'));
 
 
@@ -138,6 +139,8 @@ const MainApp: React.FC<MainAppProps> = ({ currentUser, onLogout }) => {
         return <BackendDiagnosticScreen />;
       case 'ui_designer':
         return <UIDesignerScreen onLogout={onLogout} />;
+      case 'reports':
+        return <ReportsScreen />;
       default:
         return <DashboardScreen onSelectPassenger={handleShowPassengerDetails} currentUser={currentUser} />;
     }

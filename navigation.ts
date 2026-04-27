@@ -16,6 +16,7 @@ export const mainNavItems: NavItemConfig[] = [
     { id: 'company_flow', label: 'Clients', icon: UsersIcon },
     { id: 'travel', label: 'Travel', icon: TicketIcon },
     { id: 'documents', label: 'Documents', icon: DocumentDuplicateIcon },
+    { id: 'reports', label: 'Reports', icon: ChartBarIcon },
 ];
 
 export const toolsNavItems: NavItemConfig[] = [

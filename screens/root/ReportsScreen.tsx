@@ -26,7 +26,8 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 type ReportType = 'summary' | 'personnel' | 'travel' | 'companies' | 'deadlines';
 
 const ReportsScreen: React.FC = () => {
-    const { brandColor } = useBranding();
+    const branding = useBranding();
+    const { brandColor } = branding;
     const { companies } = useCompanies();
     const [activeReport, setActiveReport] = useState<ReportType>('summary');
     const [passengers, setPassengers] = useState<Passenger[]>([]);
@@ -52,11 +53,39 @@ const ReportsScreen: React.FC = () => {
 
     const safeString = (val: any): string => {
         if (val === null || val === undefined) return 'N/A';
-        if (typeof val === 'object') return JSON.stringify(val).slice(0, 50);
+        if (typeof val === 'object') return '[Object]';
         return String(val);
     };
 
     // --- Computed Data ---
+
+    const stats = useMemo(() => {
+        const now = new Date();
+        const sevenDays = 7 * 24 * 60 * 60 * 1000;
+        
+        const tickets = passengers.flatMap(p => p.tickets || []);
+        
+        return {
+            totalPersonnel: passengers.length,
+            totalTickets: tickets.length,
+            impendingTravel: tickets.filter(t => {
+                if (!t.travelDate) return false;
+                const diff = new Date(t.travelDate).getTime() - now.getTime();
+                return diff > 0 && diff < sevenDays;
+            }).length,
+            criticalDeadlines: passengers.reduce((count, p) => {
+                const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+                let c = 0;
+                [...(p.passports || []), ...(p.visas || []), ...(p.permits || [])].forEach(doc => {
+                    if (doc.dateOfExpiry) {
+                        const diff = new Date(doc.dateOfExpiry).getTime() - now.getTime();
+                        if (diff < thirtyDays) c++;
+                    }
+                });
+                return count + c;
+            }, 0)
+        };
+    }, [passengers]);
 
     const filteredPassengers = useMemo(() => {
         return passengers.filter(p => {
